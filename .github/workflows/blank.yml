@@ -1,0 +1,55 @@
+name: Car Assembly Line Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:  # Дозволяє запуск вручну через GitHub UI
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      build-dir: ${{ steps.set-outputs.outputs.build-dir }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Create build directory
+      run: |
+        mkdir -p build
+        echo "Assembly started at $(date)" > build/car_parts.txt
+
+    - name: Add car parts
+      run: |
+        echo "1. Engine: V8" >> build/car_parts.txt
+        echo "2. Body: Sedan" >> build/car_parts.txt
+        echo "3. Wheels: 4x Alloy" >> build/car_parts.txt
+        echo "4. Interior: Leather" >> build/car_parts.txt
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: car-build
+        path: build/
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Download artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: car-build
+
+    - name: Verify parts
+      run: |
+        echo "Checking car parts..."
+        grep "Engine: V8" build/car_parts.txt || exit 1
+        grep "Body: Sedan" build/car_parts.txt || exit 1
+        grep "Wheels: 4x Alloy" build/car_parts.txt || exit 1
+        grep "Interior: Leather" build/car_parts.txt || exit 1
+        echo "All parts are present! ✅"
