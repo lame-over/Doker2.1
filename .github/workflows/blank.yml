@@ -30,7 +30,7 @@ jobs:
         echo "4. Interior: Leather" >> build/car_parts.txt
 
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: car-build
         path: build/
